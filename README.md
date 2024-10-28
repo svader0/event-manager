@@ -11,6 +11,11 @@
 docker-compose up --build
 ```
 
+or if that doesn't work, try:
+```bash
+docker compose up --build
+```
+
 5. Access the webapp at `http://localhost:3001`
 
 This app uses Docker, which is a tool that allows us to package our application and its dependencies into a container that can run exactly the same on any machine.
