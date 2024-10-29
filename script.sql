@@ -2,7 +2,7 @@ CREATE TABLE location (
   `id` INT PRIMARY KEY,
   `name` VARCHAR(50) NOT NULL,
   `address` VARCHAR(100) NOT NULL,
-  `seats` INT NOT NULL
+  `seats` INT NOT NULL CHECK (seats > 0)
 );
 
 CREATE TABLE event (
@@ -10,7 +10,7 @@ CREATE TABLE event (
   `organizer` VARCHAR(50) NOT NULL,
   `category` VARCHAR(50) NOT NULL,
   `description` TEXT NOT NULL,
-  `price` DECIMAL(10, 2) NOT NULL,
+  `price` DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
   `name` VARCHAR(50) NOT NULL,
   `date` DATE NOT NULL,
   `location_id` INT NOT NULL,
@@ -45,8 +45,8 @@ CREATE TABLE ticket (
   `event_id` INT NOT NULL,
   `user_id` INT NOT NULL,
   `purchase_date` DATE NOT NULL,
-  `quantity` INT NOT NULL,
-  `amount_paid` DECIMAL(10, 2) NOT NULL,
+  `quantity` INT NOT NULL CHECK (quantity > 0),
+  `amount_paid` DECIMAL(10, 2) NOT NULL CHECK (amount_paid >= 0),
   FOREIGN KEY (event_id) REFERENCES event(id),
   FOREIGN KEY (user_id) REFERENCES user(id)
 );
