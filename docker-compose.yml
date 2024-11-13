@@ -8,6 +8,10 @@ services:
       - MYSQL_DATABASE=appdb # Specifies the name of the database
       - MYSQL_PASSWORD=pass123 # Sets the password for the MySQL user
       - MYSQL_ROOT_PASSWORD=pass123 # Sets the root password for MySQL
+      - MYSQL_USER=root # Sets the username for the MySQL user
+      - MYSQL_DB_HOST=db # Specifies the hostname for the database
+      
+      
     networks:
       - sqlNetwork
     ports:

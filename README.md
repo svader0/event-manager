@@ -26,3 +26,10 @@ This app uses Docker, which is a tool that allows us to package our application 
     Port: 3307
     Username: root
     Password: pass123
+
+To log into the database, try this:
+    
+```bash
+docker exec -it event-manager-db-1 /bin/bash
+mysql -u root -p
+```
