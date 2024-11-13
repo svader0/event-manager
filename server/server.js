@@ -31,21 +31,8 @@ const databaseInit = () => {
   });
 };
 
-const executeSQLFile = (filePath) => {
-  const sql = fs.readFileSync(filePath, "utf8").replace(/(\r\n|\n|\r)/gm, "");
-  databaseInit();
-  con.query(sql, (err, results) => {
-    if (err) {
-      console.error("Error executing SQL file: ", err);
-      return;
-    }
-    console.log("SQL file executed successfully");
-  });
-};
-
 // Initialize database and tables on startup
 databaseInit();
-executeSQLFile(path.join(__dirname, "schema.sql"));
 
 
 /** 

@@ -21,20 +21,6 @@ CREATE TABLE IF NOT EXISTS `event` (
   FOREIGN KEY (location_id) REFERENCES location(id)
 );
 
-CREATE TABLE IF NOT EXISTS `review` (
-  `event_id` INT NOT NULL,
-  `rating` DECIMAL(10, 2) 
-    NOT NULL 
-    CHECK (rating >= 0 AND rating <= 5),
-  `comment` TEXT NOT NULL,
-  `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `user_id` INT NOT NULL,
-  -- Timestamp will basically just always set itself to the current time
-  FOREIGN KEY (event_id) REFERENCES event(id),
-  FOREIGN KEY (user_id) REFERENCES user(id),
-  PRIMARY KEY (event_id, user_id)
-);
-
 CREATE TABLE IF NOT EXISTS `user` (
   `id` INT PRIMARY KEY,
   `first_name` VARCHAR(50) NOT NULL,
@@ -42,6 +28,18 @@ CREATE TABLE IF NOT EXISTS `user` (
   `email` VARCHAR(50) NOT NULL,
   `password` VARCHAR(50) NOT NULL,
   `role` VARCHAR(20)
+);
+
+CREATE TABLE IF NOT EXISTS `review` (
+  `event_id` INT NOT NULL,
+  `rating` DECIMAL(10, 2) NOT NULL CHECK (rating >= 0 AND rating <= 5),
+  `comment` TEXT NOT NULL,
+  `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `user_id` INT NOT NULL,
+  -- Timestamp will basically just always set itself to the current time
+  FOREIGN KEY (event_id) REFERENCES event(id),
+  FOREIGN KEY (user_id) REFERENCES user(id),
+  PRIMARY KEY (event_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS `ticket` (

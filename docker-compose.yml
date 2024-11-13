@@ -8,14 +8,18 @@ services:
       - MYSQL_DATABASE=appdb # Specifies the name of the database
       - MYSQL_PASSWORD=pass123 # Sets the password for the MySQL user
       - MYSQL_ROOT_PASSWORD=pass123 # Sets the root password for MySQL
-      - MYSQL_USER=root # Sets the username for the MySQL user
-      - MYSQL_DB_HOST=db # Specifies the hostname for the database
-      
-      
     networks:
       - sqlNetwork
     ports:
       - 3307:3306 # Maps the container's port 3306 to the host's port 3307
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./database:/tmp/database
+    command: mysqld --init-file="/tmp/database/schema.sql"
 
   api:
     # Defines the 'api' service for the backend API
@@ -28,7 +32,8 @@ services:
     networks:
       - sqlNetwork
     depends_on:
-      - db # Specifies that the 'api' service depends on the 'db' service
+      db:
+        condition: service_healthy # Specifies that the 'api' service depends on the 'db' service being healthy
 
   client:
     # Defines the 'frontend' service for the frontend app
