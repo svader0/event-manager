@@ -1,5 +1,7 @@
 const express = require("express");
 const mysql = require("mysql2");
+const fs = require("fs");
+const path = require("path");
 var cors = require("cors");
 const bodyParser = require("body-parser");
 
@@ -29,46 +31,17 @@ const databaseInit = () => {
   });
 };
 
-const createDatabase = () => {
-  con.query("CREATE DATABASE IF NOT EXISTS appdb", (err, results) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    console.log("Database created successfully");
-  });
-};
+// Initialize database and tables on startup
+databaseInit();
 
-const createTable = () => {
-  con.query(
-    "CREATE TABLE IF NOT EXISTS apptb (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255))",
-    (err, results) => {
-      if (err) {
-        console.error(err);
-        return;
-      }
-      console.log("Table created successfully");
-    }
-  );
-};
 
-// GET request
-app.get("/user", (req, res) => {
-  databaseInit();
-  con.query("SELECT * FROM apptb", (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error retrieving data from database");
-    } else {
-      res.json(results);
-    }
-  });
-});
+/** 
+ *  POST REQUESTS ========================================================================
+ */
 
-// POST request
 app.post("/user", (req, res) => {
   con.query(
-    "INSERT INTO apptb (name) VALUES (?)",
+    "INSERT INTO user (name) VALUES (?)",
     [req.body.data],
     (err, results) => {
       if (err) {
@@ -81,16 +54,68 @@ app.post("/user", (req, res) => {
   );
 });
 
-app.post("/dbinit", (req, res) => {
+/**
+ *  GET REQUESTS ========================================================================
+ */
+
+app.get("/location", (req, res) => {
   databaseInit();
-  createDatabase();
-  res.json("Database created successfully");
+  con.query("SELECT * FROM location", (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error retrieving data from database");
+    } else {
+      res.json(results);
+    }
+  });
 });
 
-app.post("/tbinit", (req, res) => {
+app.get("/event", (req, res) => {
   databaseInit();
-  createTable();
-  res.json("Table created successfully");
+  con.query("SELECT * FROM event", (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error retrieving data from database");
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+app.get("/review", (req, res) => {
+  databaseInit();
+  con.query("SELECT * FROM review", (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error retrieving data from database");
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+app.get("/user", (req, res) => {
+  databaseInit();
+  con.query("SELECT * FROM user", (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error retrieving data from database");
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+app.get("/ticket", (req, res) => {
+  databaseInit();
+  con.query("SELECT * FROM ticket", (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error retrieving data from database");
+    } else {
+      res.json(results);
+    }
+  });
 });
 
 // Start the server
