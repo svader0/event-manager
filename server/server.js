@@ -46,7 +46,7 @@ app.post("/user", (req, res) => {
     (err, results) => {
       if (err) {
         console.error(err);
-        res.status(500).send("Error retrieving data from database");
+        res.status(500).send("Error retrieving data from database: " + err);
       } else {
         res.json(results);
       }
@@ -63,7 +63,7 @@ app.get("/location", (req, res) => {
   con.query("SELECT * FROM location", (err, results) => {
     if (err) {
       console.error(err);
-      res.status(500).send("Error retrieving data from database");
+      res.status(500).send("Error retrieving data from database: " + err);
     } else {
       res.json(results);
     }
@@ -75,7 +75,7 @@ app.get("/event", (req, res) => {
   con.query("SELECT * FROM event", (err, results) => {
     if (err) {
       console.error(err);
-      res.status(500).send("Error retrieving data from database");
+      res.status(500).send("Error retrieving data from database: " + err);
     } else {
       res.json(results);
     }
@@ -87,7 +87,7 @@ app.get("/review", (req, res) => {
   con.query("SELECT * FROM review", (err, results) => {
     if (err) {
       console.error(err);
-      res.status(500).send("Error retrieving data from database");
+      res.status(500).send("Error retrieving data from database: " + err);
     } else {
       res.json(results);
     }
@@ -99,7 +99,7 @@ app.get("/user", (req, res) => {
   con.query("SELECT * FROM user", (err, results) => {
     if (err) {
       console.error(err);
-      res.status(500).send("Error retrieving data from database");
+      res.status(500).send("Error retrieving data from database: " + err);
     } else {
       res.json(results);
     }
@@ -111,7 +111,7 @@ app.get("/ticket", (req, res) => {
   con.query("SELECT * FROM ticket", (err, results) => {
     if (err) {
       console.error(err);
-      res.status(500).send("Error retrieving data from database");
+      res.status(500).send("Error retrieving data from database: " + err);
     } else {
       res.json(results);
     }
