@@ -5,10 +5,14 @@ const path = require("path");
 var cors = require("cors");
 const bodyParser = require("body-parser");
 
+const db = require('./database');
+
 // Create the Express app
 const app = express();
 app.use(cors());
+app.use(express.json())
 app.use(bodyParser.json());
+
 
 // Create a connection to the MySQL database
 const mysqlConfig = {
@@ -34,88 +38,23 @@ const databaseInit = () => {
 // Initialize database and tables on startup
 databaseInit();
 
-
 /** 
  *  POST REQUESTS ========================================================================
  */
-
-app.post("/user", (req, res) => {
-  con.query(
-    "INSERT INTO user (name) VALUES (?)",
-    [req.body.data],
-    (err, results) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Error retrieving data from database: " + err);
-      } else {
-        res.json(results);
-      }
-    }
-  );
+app.post("/event", (req, res) => {
+    console.log("post event: here is what is in req.body:");
+    console.log(req.body);
+    db.insertEvent(req,res);
+    res.end();
 });
 
 /**
  *  GET REQUESTS ========================================================================
  */
 
-app.get("/location", (req, res) => {
-  databaseInit();
-  con.query("SELECT * FROM location", (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error retrieving data from database: " + err);
-    } else {
-      res.json(results);
-    }
-  });
-});
-
 app.get("/event", (req, res) => {
-  databaseInit();
-  con.query("SELECT * FROM event", (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error retrieving data from database: " + err);
-    } else {
-      res.json(results);
-    }
-  });
-});
-
-app.get("/review", (req, res) => {
-  databaseInit();
-  con.query("SELECT * FROM review", (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error retrieving data from database: " + err);
-    } else {
-      res.json(results);
-    }
-  });
-});
-
-app.get("/user", (req, res) => {
-  databaseInit();
-  con.query("SELECT * FROM user", (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error retrieving data from database: " + err);
-    } else {
-      res.json(results);
-    }
-  });
-});
-
-app.get("/ticket", (req, res) => {
-  databaseInit();
-  con.query("SELECT * FROM ticket", (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error retrieving data from database: " + err);
-    } else {
-      res.json(results);
-    }
-  });
+  console.log("get event");
+  db.getEvent(req,res);
 });
 
 // Start the server

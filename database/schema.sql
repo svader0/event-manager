@@ -3,14 +3,19 @@ CREATE DATABASE IF NOT EXISTS appdb;
 USE appdb;
 
 CREATE TABLE IF NOT EXISTS `location` (
-  `id` INT PRIMARY KEY,
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
   `name` VARCHAR(50) NOT NULL,
   `address` VARCHAR(100) NOT NULL,
   `seats` INT NOT NULL CHECK (seats > 0)
 );
 
+CREATE TABLE IF NOT EXISTS `eventtest` (
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `name` VARCHAR(50) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS `event` (
-  `id` INT PRIMARY KEY,
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
   `organizer` VARCHAR(50) NOT NULL,
   `category` VARCHAR(50) NOT NULL,
   `description` TEXT NOT NULL,
@@ -22,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `event` (
 );
 
 CREATE TABLE IF NOT EXISTS `user` (
-  `id` INT PRIMARY KEY,
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
   `first_name` VARCHAR(50) NOT NULL,
   `last_name` VARCHAR(50) NOT NULL,
   `email` VARCHAR(50) NOT NULL,
@@ -43,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `review` (
 );
 
 CREATE TABLE IF NOT EXISTS `ticket` (
-  `id` INT PRIMARY KEY,
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
   `event_id` INT NOT NULL,
   `user_id` INT NOT NULL,
   `purchase_date` DATE NOT NULL,

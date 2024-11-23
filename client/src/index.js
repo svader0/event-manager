@@ -1,11 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-//import "./Pages/index.css";
-//import App from "./Pages/App";
-import Layout from "./Pages/Layout";
+import "./index.css";
 import Home from "./Pages/Home";
+import Layout from "./Pages/Layout";
+import Example from "./Pages/Example";
 import NoPage from "./Pages/NoPage";
 
 export default function App() {
@@ -14,6 +13,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+	        <Route path="example" element={<Example />} />
           <Route path="*" element={<NoPage />} />
         </Route>
       </Routes>
