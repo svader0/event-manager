@@ -9,10 +9,10 @@ CREATE TABLE IF NOT EXISTS `location` (
   `seats` INT NOT NULL CHECK (seats > 0)
 );
 
-CREATE TABLE IF NOT EXISTS `eventtest` (
-  `id` INT PRIMARY KEY AUTO_INCREMENT,
-  `name` VARCHAR(50) NOT NULL
-);
+--CREATE TABLE IF NOT EXISTS `eventtest` (
+--  `id` INT PRIMARY KEY AUTO_INCREMENT,
+--  `name` VARCHAR(50) NOT NULL
+--);
 
 CREATE TABLE IF NOT EXISTS `event` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
@@ -20,11 +20,25 @@ CREATE TABLE IF NOT EXISTS `event` (
   `category` VARCHAR(50) NOT NULL,
   `description` TEXT NOT NULL,
   `price` DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
+  `time` TIME NOT NULL,
   `name` VARCHAR(50) NOT NULL,
   `date` DATE NOT NULL,
+  `attendee_count` INT NOT NULL DEFAULT 0,
   `location_id` INT NOT NULL,
   FOREIGN KEY (location_id) REFERENCES location(id)
 );
+
+DELIMITER //
+CREATE TRIGGER `event_date_check` BEFORE INSERT ON `event`
+FOR EACH ROW
+BEGIN
+  IF NEW.date < CURDATE() THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Cannot insert events with past dates';
+  END IF;
+END;
+//
+DELIMITER ;
 
 CREATE TABLE IF NOT EXISTS `user` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
