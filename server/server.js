@@ -5,117 +5,87 @@ const path = require("path");
 var cors = require("cors");
 const bodyParser = require("body-parser");
 
+const db = require('./database');
+
 // Create the Express app
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Create a connection to the MySQL database
-const mysqlConfig = {
-  host: process.env.DB_HOST || "db",
-  port: process.env.DB_PORT || "3306",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "pass123",
-  database: process.env.DB_NAME || "appdb",
-};
-
-let con = null;
-const databaseInit = () => {
-  con = mysql.createConnection(mysqlConfig);
-  con.connect((err) => {
-    if (err) {
-      console.error("Error connecting to the database: ", err);
-      return;
-    }
-    console.log("Connected to the database");
-  });
-};
-
 // Initialize database and tables on startup
-databaseInit();
-
+db.databaseInit();
 
 /** 
  *  POST REQUESTS ========================================================================
  */
 
-app.post("/user", (req, res) => {
-  con.query(
-    "INSERT INTO user (name) VALUES (?)",
-    [req.body.data],
-    (err, results) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Error retrieving data from database: " + err);
-      } else {
-        res.json(results);
-      }
-    }
-  );
+app.post("/event", (req, res) => {
+  console.log("post event: here is what is in req.body:");
+  console.log(req.body);
+  db.database_commands.insertEvent(req, res);
+  res.end();
 });
+app.post("/user", (req, res) => {
+  console.log("post user: here is what is in req.body:");
+  console.log(req.body);
+  db.database_commands.insertUser(req, res);
+  res.end();
+});
+app.post("/review", (req, res) => {
+  console.log("post review: here is what is in req.body:");
+  console.log(req.body);
+  db.database_commands.insertReview(req, res);
+  res.end();
+});
+app.post("/location", (req, res) => {
+  console.log("post location: here is what is in req.body:");
+  console.log(req.body);
+  db.database_commands.insertLocation(req, res);
+  res.end();
+});
+app.post("/ticket", (req, res) => {
+  console.log("post ticket: here is what is in req.body:");
+  console.log(req.body);
+  db.database_commands.insertTicket(req, res);
+  res.end();
+});
+
 
 /**
  *  GET REQUESTS ========================================================================
  */
 
-app.get("/location", (req, res) => {
-  databaseInit();
-  con.query("SELECT * FROM location", (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error retrieving data from database: " + err);
-    } else {
-      res.json(results);
-    }
-  });
-});
-
 app.get("/event", (req, res) => {
-  databaseInit();
-  con.query("SELECT * FROM event", (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error retrieving data from database: " + err);
-    } else {
-      res.json(results);
-    }
-  });
+  console.log("Received a GET request for all events");
+  db.database_commands.getEvents(req, res);
 });
-
-app.get("/review", (req, res) => {
-  databaseInit();
-  con.query("SELECT * FROM review", (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error retrieving data from database: " + err);
-    } else {
-      res.json(results);
-    }
-  });
+app.get("/event/:id", (req, res) => {
+  const eventId = req.params.id;
+  console.log("Received a GET request for event with id:", eventId);
+  db.database_commands.getEventById(eventId, res);
 });
-
-app.get("/user", (req, res) => {
-  databaseInit();
-  con.query("SELECT * FROM user", (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error retrieving data from database: " + err);
-    } else {
-      res.json(results);
-    }
-  });
-});
-
 app.get("/ticket", (req, res) => {
-  databaseInit();
-  con.query("SELECT * FROM ticket", (err, results) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error retrieving data from database: " + err);
-    } else {
-      res.json(results);
-    }
-  });
+  console.log("Received a GET request for all tickets");
+  db.database_commands.getTickets(req, res);
+});
+app.get("/event/:id/review", (req, res) => {
+  const eventId = req.params.id;
+  console.log("Received a GET request for all tickets");
+  db.database_commands.getEventReviews(eventId, res);
+});
+app.get("/user/:id", (req, res) => {
+  const userId = req.params.id;
+  console.log("Received a GET request for user with id:", userId);
+  db.database_commands.getUserByID(userId, res);
+});
+app.get("/location/:id", (req, res) => {
+  const locationId = req.params.id;
+  console.log("Received a GET request for location with id:", locationId);
+  db.database_commands.getLocationByID(locationId, res);
+});
+app.get("/location", (req, res) => {
+  console.log("Received a GET request for all locations");
+  db.database_commands.getLocations(req, res);
 });
 
 // Start the server

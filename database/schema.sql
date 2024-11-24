@@ -3,26 +3,45 @@ CREATE DATABASE IF NOT EXISTS appdb;
 USE appdb;
 
 CREATE TABLE IF NOT EXISTS `location` (
-  `id` INT PRIMARY KEY,
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
   `name` VARCHAR(50) NOT NULL,
   `address` VARCHAR(100) NOT NULL,
   `seats` INT NOT NULL CHECK (seats > 0)
 );
 
+--CREATE TABLE IF NOT EXISTS `eventtest` (
+--  `id` INT PRIMARY KEY AUTO_INCREMENT,
+--  `name` VARCHAR(50) NOT NULL
+--);
+
 CREATE TABLE IF NOT EXISTS `event` (
-  `id` INT PRIMARY KEY,
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
   `organizer` VARCHAR(50) NOT NULL,
   `category` VARCHAR(50) NOT NULL,
   `description` TEXT NOT NULL,
   `price` DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
+  `time` TIME NOT NULL,
   `name` VARCHAR(50) NOT NULL,
   `date` DATE NOT NULL,
+  `attendee_count` INT NOT NULL DEFAULT 0,
   `location_id` INT NOT NULL,
   FOREIGN KEY (location_id) REFERENCES location(id)
 );
 
+DELIMITER //
+CREATE TRIGGER `event_date_check` BEFORE INSERT ON `event`
+FOR EACH ROW
+BEGIN
+  IF NEW.date < CURDATE() THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Cannot insert events with past dates';
+  END IF;
+END;
+//
+DELIMITER ;
+
 CREATE TABLE IF NOT EXISTS `user` (
-  `id` INT PRIMARY KEY,
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
   `first_name` VARCHAR(50) NOT NULL,
   `last_name` VARCHAR(50) NOT NULL,
   `email` VARCHAR(50) NOT NULL,
@@ -43,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `review` (
 );
 
 CREATE TABLE IF NOT EXISTS `ticket` (
-  `id` INT PRIMARY KEY,
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
   `event_id` INT NOT NULL,
   `user_id` INT NOT NULL,
   `purchase_date` DATE NOT NULL,
