@@ -12,16 +12,18 @@ const Event = () => {
         event_id: id,
         purchase_date: new Date().toISOString().split('T')[0], // current date
         quantity: 1,
-        amount_paid: 0
+        amount_paid: 0,
+        user_id: null
     });
     const [review, setReview] = useState({
-        user_id: 1,
+        user_id: null,
         event_id: id,
         rating: 0,
         comment: ""
     });
     const [reviews, setReviews] = useState([]);
     const [users, setUsers] = useState({});
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -57,8 +59,31 @@ const Event = () => {
             }
         };
 
+        const fetchUser = async () => {
+            const token = localStorage.getItem("token");
+            if (token) {
+                try {
+                    const response = await axios.get("http://localhost:3000/user/me", {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    setUser(response.data);
+                    setTicket((prev) => ({
+                        ...prev,
+                        user_id: response.data.id // Set user_id in ticket
+                    }));
+                    setReview((prev) => ({
+                        ...prev,
+                        user_id: response.data.id // Set user_id in review
+                    }));
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                }
+            }
+        };
+
         fetchEvent();
         fetchReviews();
+        fetchUser();
     }, [id]);
 
     const handleChange = (e) => {
@@ -81,8 +106,19 @@ const Event = () => {
         e.preventDefault();
         try {
             ticket.amount_paid = event.price;
+            ticket.name = user.first_name + " " + user.last_name;
+            ticket.email = user.email;
             const response = await axios.post("http://localhost:3000/ticket", ticket);
             console.log("Ticket reserved:", response.data);
+
+            // Update the attendee count
+            const updatedEvent = { ...event, attendee_count: event.attendee_count + Number(ticket.quantity) };
+            await axios.put(`http://localhost:3000/event/${event.id}`, updatedEvent);
+            setEvent(updatedEvent);
+
+            // Show alert and refresh the page
+            alert("Your reservation was created successfully!");
+            window.location.reload();
         } catch (error) {
             console.error("Error reserving ticket:", error);
         }
@@ -94,6 +130,8 @@ const Event = () => {
             const response = await axios.post("http://localhost:3000/review", review);
             console.log("Review submitted:", response.data);
             setReviews((prev) => [...prev, response.data]);
+            // Refresh the page
+            window.location.reload();
         } catch (error) {
             console.error("Error submitting review:", error);
         }
@@ -115,24 +153,16 @@ const Event = () => {
                 <p>Category: {event.category}</p>
                 <p>Description: {event.description}</p>
                 <p>Price: ${event.price}</p>
-                <p>Date: {event.date}</p>
+                <p>Date: {new Date(event.date).toLocaleDateString()}</p>
                 <p>Time: {event.time}</p>
                 <p>Attendees: {event.attendee_count} / {location.seats}</p>
                 <p>Location: {location.name}, {location.address}</p>
             </div>
-            {!isEventPassed && (
+            {!isEventPassed && user && (
                 <div>
                     <h2>Reserve a Ticket</h2>
                     <p>Note that if you reserve a ticket online and the event is not free admission, you will be obligated to pay in cash at the door.</p>
                     <form onSubmit={handleSubmit}>
-                        <label>
-                            Name:
-                            <input type="text" name="name" value={ticket.name} onChange={handleChange} />
-                        </label>
-                        <label>
-                            Email:
-                            <input type="email" name="email" value={ticket.email} onChange={handleChange} />
-                        </label>
                         <label>
                             Quantity:
                             <input type="number" name="quantity" value={ticket.quantity} onChange={handleChange} min="1" />
@@ -141,7 +171,10 @@ const Event = () => {
                     </form>
                 </div>
             )}
-            {isEventPassed && (
+            {!user && (
+                <p>Please log in to reserve a ticket.</p>
+            )}
+            {isEventPassed && user && (
                 <div>
                     <h2>Reviews</h2>
                     <table>

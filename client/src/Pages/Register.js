@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const Account = () => {
+const Register = () => {
     const [user, setUser] = useState({
         first_name: "",
         last_name: "",
         email: "",
         password: "",
-        role: ""
     });
 
     const handleChange = (e) => {
@@ -21,51 +20,46 @@ const Account = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post("http://localhost:3000/user", user);
-            console.log("User created:", response.data);
-            window.location.href = "/"; // Redirect to home page
+            const response = await axios.post("http://localhost:3000/register", user);
+            console.log("User registered:", response.data);
+            window.location.href = "/login"; // Redirect to login page
         } catch (error) {
-            console.error("Error creating user:", error);
-            alert("Failed to create user. Please try again.");
+            console.error("Error registering user:", error);
+            alert("Failed to register user. Please try again.");
         }
     };
 
     return (
         <div className="container">
-            <h1>Sign Up</h1>
+            <h1>Register</h1>
             <form onSubmit={handleSubmit}>
                 <label>
-                    Username:
-                    <input type="text" name="first_name" value={user.username} onChange={handleChange} />
+                    First Name:
+                    <input type="text" name="first_name" value={user.first_name} onChange={handleChange} />
                 </label>
-                <br />
                 <label>
                     Last Name:
                     <input type="text" name="last_name" value={user.last_name} onChange={handleChange} />
                 </label>
-                <br />
                 <label>
                     Email:
                     <input type="email" name="email" value={user.email} onChange={handleChange} />
                 </label>
-                <br />
                 <label>
                     Password:
                     <input type="password" name="password" value={user.password} onChange={handleChange} />
                 </label>
-                <br />
                 <label>
                     Role:
                     <select name="role" value={user.role} onChange={handleChange}>
-                        <option value="">Select a role</option>
-                        <option value="user">Standard</option>
-                        <option value="admin">Organizer</option>
+                        <option value="attendee">Attendee</option>
+                        <option value="organizer">Organizer</option>
                     </select>
                 </label>
-                <button type="submit">Sign Up</button>
+                <button type="submit">Register</button>
             </form>
         </div>
     );
 };
 
-export default Account;
+export default Register;
