@@ -45,8 +45,6 @@ function Home() {
 			})
 				.then((response) => {
 					setUser(response.data);
-					console.log("Verified sign-in as user:", response.data);
-					// Fetch recommended events for the user
 					axios.get("http://localhost:3000/recommended-events", {
 						headers: { Authorization: `Bearer ${token}` }
 					})
@@ -103,13 +101,17 @@ function Home() {
 			});
 	};
 
+	const currentDate = new Date();
+	const upcomingEvents = events.filter(event => new Date(event.date) >= currentDate);
+	const pastEvents = events.filter(event => new Date(event.date) < currentDate);
+
 	return (
 		<div className="container">
 			<h1>Event Manager</h1>
 			{user && user.role === "organizer" && (
 				<details>
 					<summary>Add a new Event</summary>
-					<div>
+					<div className="form-container">
 						<h2>Add a New Event</h2>
 						<form onSubmit={handleSubmit}>
 							<label>
@@ -121,7 +123,6 @@ function Home() {
 									onChange={handleChange}
 								/>
 							</label>
-							<br />
 							<label>
 								Organizer:
 								<input
@@ -131,7 +132,6 @@ function Home() {
 									onChange={handleChange}
 								/>
 							</label>
-							<br />
 							<label>
 								Category:
 								<select name="category" value={newEvent.category} onChange={handleChange}>
@@ -145,7 +145,6 @@ function Home() {
 									<option value="Other">Other</option>
 								</select>
 							</label>
-							<br />
 							<label>
 								Event Description:
 								<textarea
@@ -154,7 +153,6 @@ function Home() {
 									onChange={handleChange}
 								/>
 							</label>
-							<br />
 							<label>
 								Event Price:
 								<input
@@ -164,7 +162,6 @@ function Home() {
 									onChange={handleChange}
 								/>
 							</label>
-							<br />
 							<label>
 								Date:
 								<input
@@ -174,7 +171,6 @@ function Home() {
 									onChange={handleChange}
 								/>
 							</label>
-							<br />
 							<label>
 								Time:
 								<input
@@ -192,15 +188,14 @@ function Home() {
 									isSearchable
 								/>
 							</label>
-							<br />
 							<button type="submit">Add Event</button>
 						</form>
 					</div>
 				</details>
 			)}
-			<div style={{ display: "flex", justifyContent: "space-between" }}>
-				<div>
-					<h2>Events</h2>
+			<div className="events-section">
+				<div className="events-table">
+					<h2>Upcoming Events</h2>
 					<table>
 						<thead>
 							<tr>
@@ -210,7 +205,30 @@ function Home() {
 							</tr>
 						</thead>
 						<tbody>
-							{events.map((event) => (
+							{upcomingEvents.map((event) => (
+								<tr key={event.id}>
+									<td>{event.name}</td>
+									<td>{new Date(event.date).toLocaleDateString()}</td>
+									<td>
+										<a href={`/event/${event.id}`}>Details</a>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+				<div className="events-table">
+					<h2>Past Events</h2>
+					<table>
+						<thead>
+							<tr>
+								<th>Event Name</th>
+								<th>Date</th>
+								<th>Details</th>
+							</tr>
+						</thead>
+						<tbody>
+							{pastEvents.map((event) => (
 								<tr key={event.id}>
 									<td>{event.name}</td>
 									<td>{new Date(event.date).toLocaleDateString()}</td>
@@ -223,7 +241,7 @@ function Home() {
 					</table>
 				</div>
 				{user && recommendedEvents.length > 0 && (
-					<div>
+					<div className="events-table">
 						<h2>Recommended Events</h2>
 						<table>
 							<thead>

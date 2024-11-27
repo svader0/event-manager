@@ -130,10 +130,14 @@ const Event = () => {
             const response = await axios.post("http://localhost:3000/review", review);
             console.log("Review submitted:", response.data);
             setReviews((prev) => [...prev, response.data]);
-            // Refresh the page
             window.location.reload();
         } catch (error) {
             console.error("Error submitting review:", error);
+            if (error.response && error.response.data) {
+                alert("Failed to submit review: " + error.response.data);
+            } else {
+                alert("Failed to submit review. Please try again later.");
+            }
         }
     };
 

@@ -54,3 +54,24 @@ CREATE TABLE IF NOT EXISTS `ticket` (
   FOREIGN KEY (event_id) REFERENCES event(id),
   FOREIGN KEY (user_id) REFERENCES user(id)
 );
+
+DELIMITER //
+
+CREATE TRIGGER prevent_review_without_ticket
+BEFORE INSERT ON review
+FOR EACH ROW
+BEGIN
+  DECLARE ticket_count INT;
+
+  SELECT COUNT(*) INTO ticket_count
+  FROM ticket
+  WHERE user_id = NEW.user_id AND event_id = NEW.event_id;
+
+  -- If no ticket is found, prevent the review from being inserted
+  IF ticket_count = 0 THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'You cannot leave a review for an event you have not reserved a ticket for.';
+  END IF;
+END //
+
+DELIMITER ;

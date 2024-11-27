@@ -42,10 +42,7 @@ const authenticateToken = (req, res, next) => {
  */
 
 app.post("/event", (req, res) => {
-	console.log("post event: here is what is in req.body:");
-	console.log(req.body);
 	db.database_commands.insertEvent(req, res);
-	res.end();
 });
 
 app.post("/login", async (req, res) => {
@@ -73,26 +70,22 @@ app.post("/user", (req, res) => {
 	console.log("post user: here is what is in req.body:");
 	console.log(req.body);
 	db.database_commands.insertUser(req, res);
-	res.end();
 });
 
 app.post("/review", (req, res) => {
 	console.log("post review: here is what is in req.body:");
 	console.log(req.body);
 	db.database_commands.insertReview(req, res);
-	res.end();
 });
 app.post("/location", (req, res) => {
 	console.log("post location: here is what is in req.body:");
 	console.log(req.body);
 	db.database_commands.insertLocation(req, res);
-	res.end();
 });
 app.post("/ticket", (req, res) => {
 	console.log("post ticket: here is what is in req.body:");
 	console.log(req.body);
 	db.database_commands.insertTicket(req, res);
-	res.end();
 });
 
 /**
@@ -167,6 +160,30 @@ app.get("/location", (req, res) => {
 app.get("/recommended-events", authenticateToken, (req, res) => {
 	console.log("Received a GET request for recommended events for user with id:", req.user.id);
 	db.database_commands.getRecommendedEvents(req, res);
+});
+
+app.get("/user/:id/tickets", authenticateToken, (req, res) => {
+	const userId = req.params.id;
+	console.log("Received a GET request for tickets for user with id:", userId);
+	db.database_commands.getUserTickets(userId, (err, tickets) => {
+		if (err) {
+			console.error("Error fetching tickets:", err);
+			return res.status(500).send("Error fetching tickets");
+		}
+		res.json(tickets);
+	});
+});
+
+app.get("/user/:id/reviews", authenticateToken, (req, res) => {
+	const userId = req.params.id;
+	console.log("Received a GET request for reviews for user with id:", userId);
+	db.database_commands.getUserReviews(userId, (err, reviews) => {
+		if (err) {
+			console.error("Error fetching reviews:", err);
+			return res.status(500).send("Error fetching reviews");
+		}
+		res.json(reviews);
+	});
 });
 
 // PUT REQUESTS ========================================================================
