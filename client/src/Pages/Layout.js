@@ -41,6 +41,9 @@ const Layout = () => {
               )}
               <li>Logged in as: {user.email}</li>
               <li>
+                <Link to="/account">Account</Link>
+              </li>
+              <li>
                 <button onClick={handleLogout}>Log Out</button>
               </li>
             </>

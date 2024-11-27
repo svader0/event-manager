@@ -9,6 +9,7 @@ import Event from "./Pages/Event";
 import Location from "./Pages/Locations";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
+import Account from "./Pages/Account";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="location" element={<ProtectedRoute><Location /></ProtectedRoute>} />
           <Route path="register" element={<Register />} />
           <Route path="login" element={<Login />} />
+          <Route path="account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
           <Route path="*" element={<NoPage />} />
         </Route>
       </Routes>

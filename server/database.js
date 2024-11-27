@@ -67,9 +67,9 @@ const database_commands = {
 			(err, results) => {
 				if (err) {
 					console.error(err);
-					//res.status(500).send("Error inserting data into database: " + err);
+					res.status(500).send("Error inserting data into database: " + err);
 				} else {
-					//res.json(results);
+					res.json(results);
 				}
 			}
 		);
@@ -82,9 +82,9 @@ const database_commands = {
 			(err, results) => {
 				if (err) {
 					console.error(err);
-					//res.status(500).send("Error inserting data into database: " + err);
+					res.status(500).send("Error inserting data into database: " + err);
 				} else {
-					//res.json(results);
+					res.json(results);
 				}
 			}
 		);
@@ -97,10 +97,15 @@ const database_commands = {
 			(err, results) => {
 				if (err) {
 					console.error(err);
-					//res.status(500).send("Error inserting data into database: " + err);
-				} else {
-					//res.json(results);
+					if (err.sqlState === "45000") {
+						console.log("Sending 400 response");
+						return res.status(400).send("You cannot leave a review for an event you have not attended.");
+					}
+					console.log("Sending 500 response");
+					return res.status(500).send("Error inserting data into database: " + err);
 				}
+				console.log("Sending 200 response");
+				res.json(results);
 			}
 		);
 	},
@@ -112,10 +117,11 @@ const database_commands = {
 			(err, results) => {
 				if (err) {
 					console.error(err);
-					// res.status(500).send("Error inserting data into database: " + err);
-				} else {
-					// res.json(results);
+					console.log("Sending 500 response");
+					return res.status(500).send("Error inserting data into database: " + err);
 				}
+				console.log("Sending 200 response");
+				res.json(results);
 			}
 		);
 	},
@@ -151,8 +157,6 @@ const database_commands = {
 				console.error(err);
 				res.status(500).send("Error retrieving data from database: " + err);
 			} else {
-				console.log("getEvent's results:");
-				console.log(results);
 				res.json(results);
 			}
 		});
@@ -265,18 +269,22 @@ const database_commands = {
 	},
 	getUserTickets: (userId, callback) => {
 		checkDB();
-		con.query("SELECT event_id FROM ticket WHERE user_id = ?", [userId], (err, results) => {
-			if (err) {
-				console.error(err);
-				return callback(err, null);
+		con.query(
+			`SELECT ticket.*, event.name as event_name FROM ticket JOIN event ON ticket.event_id = event.id WHERE ticket.user_id = ?`,
+			[userId],
+			(err, results) => {
+				if (err) {
+					console.error(err);
+					return callback(err, null);
+				}
+				callback(null, results);
 			}
-			callback(null, results);
-		});
+		);
 	},
 
-	getEventTypeCounts: (eventIds, callback) => {
+	getEventCategoryCounts: (eventIds, callback) => {
 		checkDB();
-		con.query("SELECT type, COUNT(*) as count FROM event WHERE id IN (?) GROUP BY type ORDER BY count DESC", [eventIds], (err, results) => {
+		con.query("SELECT category, COUNT(*) as count FROM event WHERE id IN (?) GROUP BY category ORDER BY count DESC", [eventIds], (err, results) => {
 			if (err) {
 				console.error(err);
 				return callback(err, null);
@@ -284,9 +292,9 @@ const database_commands = {
 			callback(null, results);
 		});
 	},
-	getEventsByType: (eventType, limit, callback) => {
+	getEventsByCategory: (eventCategory, limit, callback) => {
 		checkDB();
-		con.query("SELECT * FROM event WHERE type = ? ORDER BY date DESC LIMIT ?", [eventType, limit], (err, results) => {
+		con.query("SELECT * FROM event WHERE category = ? ORDER BY date DESC LIMIT ?", [eventCategory, limit], (err, results) => {
 			if (err) {
 				console.error(err);
 				return callback(err, null);
@@ -294,7 +302,20 @@ const database_commands = {
 			callback(null, results);
 		});
 	},
-
+	getUserReviews: (userId, callback) => {
+		checkDB();
+		con.query(
+			`SELECT review.*, event.name as event_name FROM review JOIN event ON review.event_id = event.id WHERE review.user_id = ?`,
+			[userId],
+			(err, results) => {
+				if (err) {
+					console.error(err);
+					return callback(err, null);
+				}
+				callback(null, results);
+			}
+		);
+	},
 	getRecommendedEvents: (req, res) => {
 		const userId = req.user.id;
 
@@ -310,19 +331,19 @@ const database_commands = {
 				return res.json([]);
 			}
 
-			// Step 2: Determine the most common event types
-			database_commands.getEventTypeCounts(eventIds, (err, eventTypeCounts) => {
+			// Step 2: Determine the most common event categories
+			database_commands.getEventCategoryCounts(eventIds, (err, eventCategoryCounts) => {
 				if (err) {
-					return res.status(500).send("Error fetching event type counts: " + err);
+					return res.status(500).send("Error fetching event category counts: " + err);
 				}
 
-				if (eventTypeCounts.length === 0) {
+				if (eventCategoryCounts.length === 0) {
 					return res.json([]);
 				}
 
-				// Step 3: Fetch the latest events of the most common event type
-				const mostCommonEventType = eventTypeCounts[0].type;
-				database_commands.getEventsByType(mostCommonEventType, 5, (err, latestEvents) => { // Limit to top 5 events
+				// Step 3: Fetch the latest events of the most common event category
+				const mostCommonCategory = eventCategoryCounts[0].category;
+				database_commands.getEventsByCategory(mostCommonCategory, 5, (err, latestEvents) => { // Limit to top 5 events
 					if (err) {
 						return res.status(500).send("Error fetching latest events: " + err);
 					}
