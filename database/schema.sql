@@ -9,11 +9,6 @@ CREATE TABLE IF NOT EXISTS `location` (
   `seats` INT NOT NULL CHECK (seats > 0)
 );
 
---CREATE TABLE IF NOT EXISTS `eventtest` (
---  `id` INT PRIMARY KEY AUTO_INCREMENT,
---  `name` VARCHAR(50) NOT NULL
---);
-
 CREATE TABLE IF NOT EXISTS `event` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `organizer` VARCHAR(50) NOT NULL,
@@ -28,24 +23,12 @@ CREATE TABLE IF NOT EXISTS `event` (
   FOREIGN KEY (location_id) REFERENCES location(id)
 );
 
-DELIMITER //
-CREATE TRIGGER `event_date_check` BEFORE INSERT ON `event`
-FOR EACH ROW
-BEGIN
-  IF NEW.date < CURDATE() THEN
-    SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'Cannot insert events with past dates';
-  END IF;
-END;
-//
-DELIMITER ;
-
 CREATE TABLE IF NOT EXISTS `user` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `first_name` VARCHAR(50) NOT NULL,
   `last_name` VARCHAR(50) NOT NULL,
   `email` VARCHAR(50) NOT NULL,
-  `password` VARCHAR(50) NOT NULL,
+  `password` VARCHAR(300) NOT NULL,
   `role` VARCHAR(20)
 );
 

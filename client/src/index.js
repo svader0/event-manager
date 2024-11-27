@@ -1,14 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./index.css";
 import Home from "./Pages/Home";
 import Layout from "./Pages/Layout";
-import Example from "./Pages/Example";
 import NoPage from "./Pages/NoPage";
 import Event from "./Pages/Event";
 import Location from "./Pages/Locations";
-import Account from "./Pages/Account";
+import Login from "./Pages/Login";
+import Register from "./Pages/Register";
 
 export default function App() {
   return (
@@ -16,16 +16,21 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="example" element={<Example />} />
           <Route path="event/:id" element={<Event />} />
-          <Route path="account" element={<Account />} />
-          <Route path="location" element={<Location />} />
+          <Route path="location" element={<ProtectedRoute><Location /></ProtectedRoute>} />
+          <Route path="register" element={<Register />} />
+          <Route path="login" element={<Login />} />
           <Route path="*" element={<NoPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
   );
 }
+
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/login" />;
+};
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
