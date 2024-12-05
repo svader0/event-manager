@@ -243,7 +243,6 @@ function Home() {
 				<details>
 					<summary>Add a new Event</summary>
 					<div className="form-container">
-						<h2>Add a New Event</h2>
 						<form onSubmit={handleSubmit}>
 							<label>
 								Event Name:
@@ -281,15 +280,6 @@ function Home() {
 								<textarea
 									name="description"
 									value={newEvent.description}
-									onChange={handleChange}
-								/>
-							</label>
-							<label>
-								Event Price:
-								<input
-									type="number"
-									name="price"
-									value={newEvent.price}
 									onChange={handleChange}
 								/>
 							</label>

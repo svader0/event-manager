@@ -309,7 +309,7 @@ const database_commands = {
 	},
 	getEventsByCategory: (eventCategory, limit, callback) => {
 		checkDB();
-		con.query("SELECT event.*, location.* FROM event JOIN location ON event.location_id = location.id  WHERE event.category = ? ORDER BY event.date DESC LIMIT ?", [eventCategory, limit], (err, results) => {
+		con.query("SELECT event.*, location.latitude, location.longitude FROM event JOIN location ON event.location_id = location.id  WHERE event.category = ? ORDER BY event.date DESC LIMIT ?", [eventCategory, limit], (err, results) => {
 			if (err) {
 				console.error(err);
 				return callback(err, null);
