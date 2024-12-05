@@ -6,7 +6,18 @@ CREATE TABLE IF NOT EXISTS `location` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `name` VARCHAR(50) NOT NULL,
   `address` VARCHAR(100) NOT NULL,
+  `latitude` DECIMAL(9, 6) NOT NULL,
+  `longitude` DECIMAL(9, 6) NOT NULL,
   `seats` INT NOT NULL CHECK (seats > 0)
+);
+
+CREATE TABLE IF NOT EXISTS `user` (
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `first_name` VARCHAR(50) NOT NULL,
+  `last_name` VARCHAR(50) NOT NULL,
+  `email` VARCHAR(50) NOT NULL,
+  `password` VARCHAR(300) NOT NULL,
+  `role` VARCHAR(20)
 );
 
 CREATE TABLE IF NOT EXISTS `event` (
@@ -20,16 +31,9 @@ CREATE TABLE IF NOT EXISTS `event` (
   `date` DATE NOT NULL,
   `attendee_count` INT NOT NULL DEFAULT 0,
   `location_id` INT NOT NULL,
+  `creator_id` INT NOT NULL,
   FOREIGN KEY (location_id) REFERENCES location(id)
-);
-
-CREATE TABLE IF NOT EXISTS `user` (
-  `id` INT PRIMARY KEY AUTO_INCREMENT,
-  `first_name` VARCHAR(50) NOT NULL,
-  `last_name` VARCHAR(50) NOT NULL,
-  `email` VARCHAR(50) NOT NULL,
-  `password` VARCHAR(300) NOT NULL,
-  `role` VARCHAR(20)
+  FOREIGN KEY (creator_id) REFERENCES user(id)
 );
 
 CREATE TABLE IF NOT EXISTS `review` (

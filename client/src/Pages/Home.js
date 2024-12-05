@@ -18,13 +18,53 @@ function Home() {
 	});
 	const [locations, setLocations] = useState([]);
 	const [user, setUser] = useState(null);
+	const [userLocation, setUserLocation] = useState(null);
+	const [locationError, setLocationError] = useState(null);
+	const [distanceFilter, setDistanceFilter] = useState(12000);
+	const [allEvents, setAllEvents] = useState([]);
+	const [expandedTables, setExpandedTables] = useState({});
+
+	function calculateDistance(lat1, lon1, lat2, lon2) {
+		function toRad(Value) {
+			return (Value * Math.PI) / 180;
+		}
+
+		const R = 6371; // Radius of the Earth in kilometers
+		const dLat = toRad(lat2 - lat1);
+		const dLon = toRad(lon1 - lon2);
+		const a =
+			Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+			Math.cos(toRad(lat1)) *
+			Math.cos(toRad(lat2)) *
+			Math.sin(dLon / 2) *
+			Math.sin(dLon / 2);
+		const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		const distance = R * c;
+		return distance;
+	}
 
 	useEffect(() => {
-		fetch("http://localhost:3000/event")
-			.then((response) => response.json())
-			.then((data) => {
-				console.log("Fetched events:", data);
-				setEvents(data);
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(
+				(position) => {
+					setUserLocation({
+						latitude: position.coords.latitude,
+						longitude: position.coords.longitude,
+					});
+				},
+				(error) => {
+					console.error("Error obtaining location:", error);
+					setLocationError("Unable to retrieve your location.");
+				}
+			);
+		} else {
+			setLocationError("Geolocation is not supported by this browser.");
+		}
+
+		axios.get("http://localhost:3000/event")
+			.then((response) => {
+				console.log("Fetched events:", response.data);
+				setAllEvents(response.data);
 			})
 			.catch((error) => console.error("Error fetching events:", error));
 
@@ -37,25 +77,70 @@ function Home() {
 				setLocations(locationOptions);
 			})
 			.catch((error) => console.error("Error fetching locations:", error));
-
-		const token = localStorage.getItem("token");
-		if (token) {
-			axios.get("http://localhost:3000/user/me", {
-				headers: { Authorization: `Bearer ${token}` }
-			})
-				.then((response) => {
-					setUser(response.data);
-					axios.get("http://localhost:3000/recommended-events", {
-						headers: { Authorization: `Bearer ${token}` }
-					})
-						.then((response) => {
-							setRecommendedEvents(response.data);
-						})
-						.catch((error) => console.error("Error fetching recommended events:", error));
-				})
-				.catch((error) => console.error("Error fetching user data:", error));
-		}
 	}, []);
+
+	useEffect(() => {
+		if (userLocation) {
+			const token = localStorage.getItem("token");
+			if (token) {
+				axios.get("http://localhost:3000/user/me", {
+					headers: { Authorization: `Bearer ${token}` }
+				})
+					.then((response) => {
+						setUser(response.data);
+						axios.get("http://localhost:3000/recommended-events", {
+							headers: { Authorization: `Bearer ${token}` }
+						})
+							.then((response) => {
+								const recommendedEventsWithDistance = response.data.map((event) => {
+									const distance = calculateDistance(
+										userLocation.latitude,
+										userLocation.longitude,
+										event.latitude,
+										event.longitude
+									);
+									return { ...event, distance };
+								});
+
+								const currentDate = new Date();
+								const filteredAndSortedEvents = recommendedEventsWithDistance
+									.filter(event => new Date(event.date) >= currentDate)
+									.sort((a, b) => {
+										const dateA = new Date(a.date);
+										const dateB = new Date(b.date);
+										if (dateA.getTime() === dateB.getTime()) {
+											return a.distance - b.distance;
+										}
+										return dateA - dateB;
+									});
+
+								setRecommendedEvents(filteredAndSortedEvents);
+							})
+							.catch((error) => console.error("Error fetching recommended events:", error));
+					})
+					.catch((error) => console.error("Error fetching user data:", error));
+			}
+		}
+	}, [userLocation]);
+
+	useEffect(() => {
+		if (userLocation && allEvents.length > 0) {
+			const eventsWithDistance = allEvents.map((event) => {
+				const distance = calculateDistance(
+					userLocation.latitude,
+					userLocation.longitude,
+					event.latitude,
+					event.longitude
+				);
+				return { ...event, distance };
+			});
+
+			const filteredEvents = eventsWithDistance
+				.filter(event => event.distance <= distanceFilter)
+				.sort((a, b) => new Date(a.date) - new Date(b.date));
+			setEvents(filteredEvents);
+		}
+	}, [userLocation, allEvents, distanceFilter]);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -101,6 +186,51 @@ function Home() {
 			});
 	};
 
+	const toggleExpandTable = (tableName) => {
+		setExpandedTables((prev) => ({
+			...prev,
+			[tableName]: !prev[tableName],
+		}));
+	};
+
+	const renderTable = (title, events) => {
+		const isExpanded = expandedTables[title];
+		const displayedEvents = isExpanded ? events : events.slice(0, 10);
+
+		return (
+			<div className="events-table">
+				<h2>{title}</h2>
+				<table>
+					<thead>
+						<tr>
+							<th>Event Name</th>
+							<th>Date</th>
+							<th>Distance (km)</th>
+							<th>Details</th>
+						</tr>
+					</thead>
+					<tbody>
+						{displayedEvents.map((event) => (
+							<tr key={event.id}>
+								<td>{event.name}</td>
+								<td>{new Date(event.date).toLocaleDateString()}</td>
+								<td>{event.distance ? event.distance.toFixed(2) : 'N/A'}</td>
+								<td>
+									<a href={`/event/${event.id}`}>Details</a>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+				{events.length > 10 && (
+					<div className="expand-button" onClick={() => toggleExpandTable(title)}>
+						{isExpanded ? "Show Less" : "Show More"}
+					</div>
+				)}
+			</div>
+		);
+	};
+
 	const currentDate = new Date();
 	const upcomingEvents = events.filter(event => new Date(event.date) >= currentDate);
 	const pastEvents = events.filter(event => new Date(event.date) < currentDate);
@@ -108,11 +238,11 @@ function Home() {
 	return (
 		<div className="container">
 			<h1>Event Manager</h1>
+			{locationError && <p>{locationError}</p>}
 			{user && user.role === "organizer" && (
 				<details>
 					<summary>Add a new Event</summary>
 					<div className="form-container">
-						<h2>Add a New Event</h2>
 						<form onSubmit={handleSubmit}>
 							<label>
 								Event Name:
@@ -154,15 +284,6 @@ function Home() {
 								/>
 							</label>
 							<label>
-								Event Price:
-								<input
-									type="number"
-									name="price"
-									value={newEvent.price}
-									onChange={handleChange}
-								/>
-							</label>
-							<label>
 								Date:
 								<input
 									type="date"
@@ -193,78 +314,23 @@ function Home() {
 					</div>
 				</details>
 			)}
-			<div className="events-section">
-				<div className="events-table">
-					<h2>Upcoming Events</h2>
-					<table>
-						<thead>
-							<tr>
-								<th>Event Name</th>
-								<th>Date</th>
-								<th>Details</th>
-							</tr>
-						</thead>
-						<tbody>
-							{upcomingEvents.map((event) => (
-								<tr key={event.id}>
-									<td>{event.name}</td>
-									<td>{new Date(event.date).toLocaleDateString()}</td>
-									<td>
-										<a href={`/event/${event.id}`}>Details</a>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
-				<div className="events-table">
-					<h2>Past Events</h2>
-					<table>
-						<thead>
-							<tr>
-								<th>Event Name</th>
-								<th>Date</th>
-								<th>Details</th>
-							</tr>
-						</thead>
-						<tbody>
-							{pastEvents.map((event) => (
-								<tr key={event.id}>
-									<td>{event.name}</td>
-									<td>{new Date(event.date).toLocaleDateString()}</td>
-									<td>
-										<a href={`/event/${event.id}`}>Details</a>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
-				{user && recommendedEvents.length > 0 && (
-					<div className="events-table">
-						<h2>Recommended Events</h2>
-						<table>
-							<thead>
-								<tr>
-									<th>Event Name</th>
-									<th>Date</th>
-									<th>Details</th>
-								</tr>
-							</thead>
-							<tbody>
-								{recommendedEvents.map((event) => (
-									<tr key={event.id}>
-										<td>{event.name}</td>
-										<td>{new Date(event.date).toLocaleDateString()}</td>
-										<td>
-											<a href={`/event/${event.id}`}>Details</a>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				)}
+			<div className="slider-container">
+				<label>
+					Filter by distance (km):
+					<input
+						type="range"
+						min="0"
+						max="12000"
+						value={distanceFilter}
+						onChange={(e) => setDistanceFilter(e.target.value)}
+					/>
+					<span>{distanceFilter} km</span>
+				</label>
+			</div>
+			<div className="events-grid">
+				{renderTable("Upcoming Events", upcomingEvents)}
+				{renderTable("Past Events", pastEvents)}
+				{user && recommendedEvents.length > 0 && renderTable("Recommended Events", recommendedEvents)}
 			</div>
 		</div>
 	);

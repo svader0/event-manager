@@ -10,6 +10,8 @@ import Location from "./Pages/Locations";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import Account from "./Pages/Account";
+import EditEvent from "./Pages/EditEvent";
+import EventStatistics from "./Pages/EventStatistics";
 
 export default function App() {
   return (
@@ -18,6 +20,8 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="event/:id" element={<Event />} />
+          <Route path="event/:id/edit" element={<ProtectedRoute><EditEvent /></ProtectedRoute>} />
+          <Route path="event/:id/statistics" element={<ProtectedRoute><EventStatistics /></ProtectedRoute>} />
           <Route path="location" element={<ProtectedRoute><Location /></ProtectedRoute>} />
           <Route path="register" element={<Register />} />
           <Route path="login" element={<Login />} />
@@ -27,7 +31,7 @@ export default function App() {
       </Routes>
     </BrowserRouter>
   );
-}
+};
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");

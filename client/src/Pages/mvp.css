@@ -10,7 +10,6 @@
 h1,
 h2 {
   color: #333;
-  /* Darker color for headings */
 }
 
 label {
@@ -51,19 +50,43 @@ label {
 .events-table td.details {
   max-width: none;
   width: 100%;
-  /* Make the details column fill the remaining space */
 }
 
 .events-table th:first-child,
 .events-table td:first-child {
   width: 1%;
-  /* Make the first column take minimal space */
 }
 
 .events-table th:last-child,
 .events-table td:last-child {
   width: auto;
-  /* Make the last column take the remaining space */
+}
+
+.slider-container {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.events-table th,
+.events-table td {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.expand-button {
+  margin-top: 10px;
+  cursor: pointer;
+  color: blue;
+  width: 100%;
+  text-decoration: underline;
 }
 
 
