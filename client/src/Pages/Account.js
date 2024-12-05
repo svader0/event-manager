@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const Account = () => {
     const [user, setUser] = useState(null);
     const [tickets, setTickets] = useState([]);
     const [reviews, setReviews] = useState([]);
+    const [events, setEvents] = useState([]);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -26,6 +28,11 @@ const Account = () => {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     setReviews(reviewsResponse.data);
+
+                    const eventsResponse = await axios.get(`http://localhost:3000/user/${userResponse.data.id}/events`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    setEvents(eventsResponse.data);
                 } catch (error) {
                     console.error("Error fetching user data, tickets, or reviews:", error);
                     alert("Failed to fetch user data. Please try again later.");
@@ -81,6 +88,29 @@ const Account = () => {
                             <td>{review.rating}</td>
                             <td>{review.comment}</td>
                             <td>{new Date(review.timestamp).toLocaleDateString()}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            <h2>My Events</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Event Name</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {events.map(event => (
+                        <tr key={event.id}>
+                            <td>{event.name}</td>
+                            <td>{new Date(event.date).toLocaleDateString()}</td>
+                            <td>
+                                <Link to={`/event/${event.id}/edit`}>Edit</Link>
+                                {"\t"}
+                                <Link to={`/event/${event.id}/statistics`}>Statistics</Link>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
