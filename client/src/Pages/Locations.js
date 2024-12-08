@@ -15,6 +15,8 @@ const Locations = () => {
     const [map, setMap] = useState(null);
     const [markerPosition, setMarkerPosition] = useState(null);
 
+    const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+
     useEffect(() => {
         const fetchLocations = async () => {
             try {
@@ -109,7 +111,7 @@ const Locations = () => {
                     <br />
                     <label>
                         Address:
-                        <LoadScript googleMapsApiKey="AIzaSyA5MSFwQqHON3V7GwWykjbEJjs_DrQix30" libraries={["places"]}>
+                        <LoadScript googleMapsApiKey={apiKey} libraries={["places"]}>
                             <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
                                 <input
                                     type="text"
